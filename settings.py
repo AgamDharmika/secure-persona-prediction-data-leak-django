@@ -12,21 +12,28 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c1(2756j$1o(gf&1uo#+am35gaz25tpu2y)lpqc8u!jgf5n!k3'
+#SECRET_KEY = 'django-insecure-c1(2756j$1o(gf&1uo#+am35gaz25tpu2y)lpqc8u!jgf5n!k3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = [os.getenv("RENDER_EXTERNAL_HOSTNAME", "*")]
+
 
 
 # Application definition
@@ -40,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'prediction',
 ]
+INSTALLED_APPS += ["gunicorn"]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -75,7 +84,7 @@ WSGI_APPLICATION = 'secure_persona_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'secure_persona_db',
@@ -84,8 +93,12 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '3306',
     }
-}
+}'''
 
+
+DATABASES = {
+    'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -144,6 +157,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
